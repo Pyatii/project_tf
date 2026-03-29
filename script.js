@@ -3,6 +3,10 @@ const encryptedKey1 = [53, 55, 55, 53, 53, 55];
 
 const encryptedKey2 = [99, 97];
 
+const encryptedKey3 = [50, 56, 55, 49, 48, 49, 95, 115, 111, 110, 105, 99, 95, 50, 48, 48, 49];
+
+const maxKey = 3;
+
 function decryptKey1() {
     return String.fromCharCode(...encryptedKey1.map(c => c - 3));
 }
@@ -11,9 +15,22 @@ function decryptKey2() {
     return String.fromCharCode(...encryptedKey2.map(c => c ^ 0x55));
 }
 
+function encryptKey3(plainKey) {
+    return plainKey.split('').map((char, index) => {
+        return char.charCodeAt(0) ^ index;
+    });
+}
+
+function decryptKey3(encryptedArray) {
+    return encryptedArray.map((code, index) => {
+        return String.fromCharCode(code ^ index);
+    }).join('');
+}
+
 const CORRECT_KEYS = {
     1: decryptKey1(),
-    2: decryptKey2()
+    2: decryptKey2(),
+    3: decryptKey3(encryptedKey3)
 };
 
 let currentLevel = 0;
@@ -45,15 +62,13 @@ function handleInputCheck(inputElement) {
     const level = parseInt(inputElement.dataset.level);
     const enteredValue = inputElement.value.trim();
 
-    if (level === 1 && enteredValue === CORRECT_KEYS[1]) {
-        inputElement.disabled = true;
-        inputElement.style.opacity = '0.6';
-        showNextInput(2);
-    }
-    else if (level === 2 && enteredValue === CORRECT_KEYS[2]) {
-        inputElement.disabled = true;
-        inputElement.style.opacity = '0.6';
-        showSoonMessage();
+    if (enteredValue === CORRECT_KEYS[level]) {
+        if (level === maxKey) {
+            showSoonMessage();
+        }
+        else {
+            showNextInput(level + 1);
+        }
     }
     else {
         inputElement.classList.add('error');
@@ -67,7 +82,7 @@ function handleInputCheck(inputElement) {
 }
 
 function showNextInput(level) {
-    if (level > 2) return;
+    if (level > maxKey) return;
 
     const nextInput = createInputElement(`Введите ключ ${level}`, level);
     inputsContainer.appendChild(nextInput);
@@ -78,16 +93,28 @@ function showNextInput(level) {
 function showSoonMessage() {
     soonMessage.classList.remove('hidden');
     soonMessage.textContent = 'SOON';
-    currentLevel = 3;
+    currentLevel = maxKey + 1;
     soonMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const firstInput = createInputElement('Введите ключ 1', 1);
     inputsContainer.appendChild(firstInput);
+    console.log('Ключ 3:', CORRECT_KEYS[3]);
     currentLevel = 1;
 
     setTimeout(() => {
         document.querySelector('.key-input')?.focus();
     }, 100);
 });
+
+function generateEncryptedKey3() {
+    const plainKey = "295141_sonic_2001";
+    const encrypted = plainKey.split('').map((char, index) => {
+        return char.charCodeAt(0) ^ index;
+    });
+    console.log('encryptedKey3 = [' + encrypted.join(', ') + ']');
+    return encrypted;
+}
+
+generateEncryptedKey3();
